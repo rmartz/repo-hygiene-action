@@ -36,7 +36,8 @@ Why each piece is there:
 
 - **Check out first.** The action scans the calling workspace, so the job must run
   `actions/checkout` before the `- uses:` step. The action does not check out
-  anything itself.
+  anything itself. A plain checkout is enough — the checks are tree-based
+  (`git ls-files` / file reads, no history), so **no `fetch-depth: 0`** is needed.
 - **`packages: read`.** The install pulls the public `@rmartz/repo-hygiene`
   package from GitHub Packages using the built-in `GITHUB_TOKEN`; the read scope is
   all it needs — no per-repo PAT.

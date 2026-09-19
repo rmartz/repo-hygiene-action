@@ -1,0 +1,40 @@
+{
+  "name": "@rmartz/repo-hygiene-action",
+  "version": "0.0.0-development",
+  "private": true,
+  "description": "Composite GitHub Action that runs the @rmartz/repo-hygiene checks in a consuming repo's CI, kept current by Dependabot + bot-automerge.",
+  "keywords": [
+    "ci",
+    "repo-hygiene",
+    "github-actions",
+    "composite-action",
+    "dependabot"
+  ],
+  "homepage": "https://github.com/rmartz/repo-hygiene-action#readme",
+  "bugs": {
+    "url": "https://github.com/rmartz/repo-hygiene-action/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rmartz/repo-hygiene-action.git"
+  },
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.11.0"
+  },
+  "scripts": {
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": {
+    "@rmartz/repo-hygiene": "3.0.0"
+  },
+  "devDependencies": {
+    "@semantic-release/commit-analyzer": "^13.0.1",
+    "@semantic-release/github": "^12.0.9",
+    "@semantic-release/release-notes-generator": "^14.1.1",
+    "conventional-changelog-conventionalcommits": "^10.4.0",
+    "prettier": "^3.9.8",
+    "semantic-release": "^25.0.9"
+  }
+}

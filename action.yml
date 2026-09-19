@@ -1,0 +1,73 @@
+name: 'Repo Hygiene'
+description: 'Run the @rmartz/repo-hygiene low-cost CI checks against the calling repository.'
+author: 'rmartz'
+
+branding:
+  icon: 'check-circle'
+  color: 'green'
+
+# A composite action that wraps the @rmartz/repo-hygiene CLI. The consuming job
+# checks out its own repository and then runs this action as a step; the CLI
+# version is the one pinned in this action's package-lock.json (bumped by
+# Dependabot + released as a new action version), so a given action ref installs
+# a reproducible check set. See docs/design/integration-contract.md.
+
+inputs:
+  checks:
+    description: >-
+      Space-separated check names to run. Empty (the default) runs the package's
+      registry-derived default-on set, so a newly-added default-on check
+      auto-joins on the next Dependabot bump of this action with no edit here.
+      Pass e.g. "okf docs-links" to opt into repo-specific checks — this becomes
+      the exact run list, so include the defaults you still want.
+    required: false
+    default: ''
+  config:
+    description: >-
+      Path to the .repo-hygiene.yml config, relative to working-directory
+      (optional).
+    required: false
+    default: ''
+  node-version:
+    description: 'Node.js version to run the checks under.'
+    required: false
+    default: '22'
+  working-directory:
+    description: >-
+      Directory to scan (the checked-out repository root by default). The config
+      path is resolved relative to it.
+    required: false
+    default: '.'
+  token:
+    description: >-
+      Token used to install @rmartz/repo-hygiene from GitHub Packages. Defaults
+      to the workflow GITHUB_TOKEN, which reads the public package when the
+      calling job grants `packages: read`.
+    required: false
+    default: ${{ github.token }}
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+      with:
+        node-version: ${{ inputs.node-version }}
+        registry-url: https://npm.pkg.github.com
+        scope: '@rmartz'
+    # Install the pinned CLI into this action's own directory, not the consumer
+    # workspace — $GITHUB_ACTION_PATH holds this action's package.json + lockfile.
+    - name: Install pinned @rmartz/repo-hygiene
+      shell: bash
+      working-directory: ${{ github.action_path }}
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.token }}
+      run: npm ci
+    # Run the checks against the consumer workspace (working-directory), invoking
+    # the CLI by absolute path from where it was just installed.
+    - name: Run repo-hygiene checks
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: >-
+        "${GITHUB_ACTION_PATH}/node_modules/.bin/ai-repo-hygiene"
+        ${{ inputs.checks }} --check
+        ${{ inputs.config && format('--config {0}', inputs.config) || '' }}

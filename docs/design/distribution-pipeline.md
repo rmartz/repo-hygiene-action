@@ -28,7 +28,11 @@ picking it up.
    `chore(deps)` → **patch**, so the CLI bump cuts a new tag + GitHub Release. The
    release publishes nothing to a registry and commits nothing back (no
    `@semantic-release/npm`, no `@semantic-release/git`), so the built-in
-   `GITHUB_TOKEN` suffices — no PAT.
+   `GITHUB_TOKEN` suffices — no PAT. Because this step only runs post-merge, a
+   `Release dry-run` job in [`ci.yml`](../../.github/workflows/ci.yml) exercises
+   the semantic-release config (that the changelog toolchain renders) on every
+   PR, so a broken release setup fails the PR instead of the post-merge run — the
+   pre-merge guard for the exact class of preset breakage seen in #1/#2.
 
 A **major** CLI bump falls out of the auto-merge set into its own PR for a human to
 review; merging it still cuts a patch Action release (auto-classification cannot

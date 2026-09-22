@@ -64,8 +64,9 @@ does, or open a PR, to verify a change.
 Automated via **semantic-release** ([`.releaserc.json`](.releaserc.json)): a merge
 to `main` cuts the git tag + GitHub Release. It publishes nothing and commits
 nothing back (no `@semantic-release/npm`, no `@semantic-release/git`), so the
-built-in `GITHUB_TOKEN` suffices — no PAT. `chore(deps)` maps to a patch release so
-a Dependabot bump of `@rmartz/repo-hygiene` ships a new Action version. PR titles
+built-in `GITHUB_TOKEN` suffices — no PAT. `fix:` maps to a patch release (the
+stock Conventional-Commits default), so a Dependabot `fix(deps)` bump of
+`@rmartz/repo-hygiene` ships a new Action version. PR titles
 are Conventional Commits and the repo squash-merges using the PR title, so a
 non-conventional title makes semantic-release skip the release.
 

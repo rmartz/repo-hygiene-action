@@ -35,7 +35,12 @@ updates:
     schedule:
       interval: weekly
     commit-message:
-      prefix: chore
+      # Production dep bumps (@rmartz/repo-hygiene) get `fix(deps): …`, which
+      # semantic-release maps to a patch — cutting the new Action release that
+      # ships the CLI bump to consumers. Development deps get `prefix-development`
+      # (`chore(deps): …`), which is release-neutral so a tooling bump never tags.
+      prefix: fix
+      prefix-development: chore
       include: scope
     groups:
       # Prettier isolated so a reformatting bump can't hide in a catch-all.
@@ -50,9 +55,9 @@ updates:
           - minor
           - patch
       # @rmartz/repo-hygiene is the only production dep; its patch/minor bump is
-      # what bot-automerge auto-merges and .releaserc maps chore(deps) → patch, so
-      # the bump cuts a new action release. A major bump falls out to its own PR
-      # (not auto-merged) for a human to review.
+      # what bot-automerge auto-merges and, titled `fix(deps): …`, semantic-release
+      # maps to a patch, so the bump cuts a new action release. A major bump falls
+      # out to its own PR (not auto-merged) for a human to review.
       production-dependencies:
         dependency-type: production
         update-types:

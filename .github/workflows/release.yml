@@ -6,10 +6,10 @@ name: Release
 # NOTHING back to the repo (no @semantic-release/npm, no @semantic-release/git),
 # so the built-in GITHUB_TOKEN suffices — no PAT.
 #
-# The key cadence: a Dependabot `chore(deps): bump @rmartz/repo-hygiene …` PR is
-# auto-merged by bot-automerge, and .releaserc.json maps `chore(deps)` → patch, so
-# that CLI bump cuts a new action release. Consumers then pick it up via their own
-# Dependabot github-actions ecosystem.
+# The key cadence: a Dependabot `fix(deps): bump @rmartz/repo-hygiene …` PR is
+# auto-merged by bot-automerge, and `fix:` maps to a patch (the stock
+# Conventional-Commits default), so that CLI bump cuts a new action release.
+# Consumers then pick it up via their own Dependabot github-actions ecosystem.
 
 on:
   push:

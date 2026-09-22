@@ -70,6 +70,20 @@ stock Conventional-Commits default), so a Dependabot `fix(deps)` bump of
 are Conventional Commits and the repo squash-merges using the PR title, so a
 non-conventional title makes semantic-release skip the release.
 
+The Action versions **independently** of the wrapped CLI (its SemVer _number_
+describes the _wrapper's_ contract, not the CLI's number), but a CLI dependency bump
+**mirrors the CLI's semver bump type** into the Action's release type: patch →
+`fix(deps):`, minor → `feat(deps):`, major → `feat(deps)!:` + `breaking change`
+label. Patch/minor are auto-merged (safe because the CLI honors SemVer); a **CLI
+major** falls out to a human-reviewed PR, defaults to a breaking Action major, and is
+downgraded only if the break is confirmed invisible to Action consumers. This is how a
+consumer-facing break propagates even when it reaches this repo only as a dependency
+bump. The mapping is enforced automatically in `bot-automerge-action`
+([#11](https://github.com/rmartz/bot-automerge-action/pull/11)) and will arrive here
+as a shared composite action; until then a reviewer applies it by hand (the major is
+the enforced case). Full rule:
+[docs/design/versioning.md](docs/design/versioning.md).
+
 ## Worktrees & PRs
 
 - **Work in a dedicated worktree** under `.git-worktrees/` (`ai-new-worktree`),

@@ -35,10 +35,18 @@ picking it up.
    PR, so a broken release setup fails the PR instead of the post-merge run — the
    pre-merge guard for the exact class of preset breakage seen in #1/#2.
 
-A **major** CLI bump falls out of the auto-merge set into its own PR for a human to
-review; merging it still cuts a patch Action release (auto-classification cannot
-infer consumer-facing breakage), so a reviewer who judges the change breaking
-retitles the PR `feat!:` to cut a major.
+The Action **mirrors the CLI's semver bump type** into its own release type: a CLI
+minor becomes a `feat(deps):` (Action minor) and a CLI major a `feat(deps)!:` +
+`breaking change` (Action major), while a patch stays `fix(deps):`. A **major** CLI
+bump also falls out of the auto-merge set into its own PR for a human to review — a
+CLI major is the strongest signal of consumer-facing breakage, so the breaking
+mapping is the **default**, not the last word: the reviewer downgrades it (removes the
+`!` and label) only when they confirm the break is invisible to Action consumers.
+That mapping is a manual reviewer step here today; it is enforced automatically in
+[`bot-automerge-action`](https://github.com/rmartz/bot-automerge-action) and will
+arrive here as a shared action. The full rule, including how a breaking change is
+propagated even when it reaches this repo only as a dependency bump, is the
+[versioning policy](versioning.md).
 
 ## Picking it up (consumers)
 

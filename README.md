@@ -49,13 +49,13 @@ path-filtering caveat.
 
 ### Inputs
 
-| Input               | Default               | Meaning                                                       |
-| ------------------- | --------------------- | ------------------------------------------------------------- |
-| `checks`            | `''`                  | Space-separated check names. Empty runs the default-on set.   |
-| `config`            | `''`                  | Path to `.repo-hygiene.yml`, relative to `working-directory`. |
-| `node-version`      | `'22'`                | Node.js version the checks run under.                         |
-| `working-directory` | `'.'`                 | Directory to scan (the repo root by default).                 |
-| `token`             | `''`                  | Deprecated and ignored; removed in the next major version.    |
+| Input               | Default | Meaning                                                       |
+| ------------------- | ------- | ------------------------------------------------------------- |
+| `checks`            | `''`    | Space-separated check names. Empty runs the default-on set.   |
+| `config`            | `''`    | Path to `.repo-hygiene.yml`, relative to `working-directory`. |
+| `node-version`      | `'22'`  | Node.js version the checks run under.                         |
+| `working-directory` | `'.'`   | Directory to scan (the repo root by default).                 |
+| `token`             | `''`    | Deprecated and ignored; removed in the next major version.    |
 
 Omit `checks` to run the default-on set (`conflict-markers`, `action-pins`); name
 checks to opt into more (this becomes the exact run list). There is no `version`

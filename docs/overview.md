@@ -37,13 +37,13 @@ out anything itself.
 
 ## Inputs
 
-| Input               | Default               | Meaning                                                                |
-| ------------------- | --------------------- | ---------------------------------------------------------------------- |
-| `checks`            | `''`                  | Space-separated check names. Empty runs the registry's default-on set. |
-| `config`            | `''`                  | Path to `.repo-hygiene.yml`, relative to `working-directory`.          |
-| `node-version`      | `'22'`                | Node.js version the checks run under.                                  |
-| `working-directory` | `'.'`                 | Directory to scan (the repo root by default).                          |
-| `token`             | `''`                  | Deprecated and ignored; removed in the next major version.             |
+| Input               | Default | Meaning                                                                |
+| ------------------- | ------- | ---------------------------------------------------------------------- |
+| `checks`            | `''`    | Space-separated check names. Empty runs the registry's default-on set. |
+| `config`            | `''`    | Path to `.repo-hygiene.yml`, relative to `working-directory`.          |
+| `node-version`      | `'22'`  | Node.js version the checks run under.                                  |
+| `working-directory` | `'.'`   | Directory to scan (the repo root by default).                          |
+| `token`             | `''`    | Deprecated and ignored; removed in the next major version.             |
 
 There is deliberately **no `version` input** (unlike the reusable workflow): the
 installed CLI version is the one pinned in this Action's lockfile, bumped by

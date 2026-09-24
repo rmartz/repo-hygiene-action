@@ -18,7 +18,6 @@ on: [pull_request, push]
 
 permissions:
   contents: read
-  packages: read # read the public @rmartz/repo-hygiene package from GitHub Packages
   statuses: write # post one commit status per check
 
 jobs:
@@ -39,14 +38,13 @@ Why each piece is there:
   `actions/checkout` before the `- uses:` step. The action does not check out
   anything itself. A plain checkout is enough — the checks are tree-based
   (`git ls-files` / file reads, no history), so **no `fetch-depth: 0`** is needed.
-- **`packages: read`.** The install pulls the public `@rmartz/repo-hygiene`
-  package from GitHub Packages using the built-in `GITHUB_TOKEN`; the read scope is
-  all it needs — no per-repo PAT.
 - **`statuses: write`.** The action posts one commit status per check —
   `repo-hygiene / okf`, `repo-hygiene / docs-links`, … — so a contributor sees
   which check failed straight from the PR's status list. Without the scope the
   action logs one warning and carries on; the job's own pass/fail still reports
   the overall result. Set `statuses: false` to opt out.
+- **No `packages: read` needed.** The install pulls `@rmartz/repo-hygiene` from
+  npmjs with no auth — no token or `packages: read` required.
 - **`checks` is the exact run list.** Omit it to run the default-on set; name
   checks to opt in (include the defaults you still want).
 - **`config`** points at the repo's `.repo-hygiene.yml`, resolved relative to

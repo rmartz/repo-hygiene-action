@@ -13,9 +13,9 @@ picking it up.
 
 ## Producing a release (this repo)
 
-1. **CLI bump.** `@rmartz/repo-hygiene` publishes a new version to GitHub Packages.
-   Dependabot's npm ecosystem (with the `github-packages` registry auth wired in
-   [`dependabot.yml`](../../.github/dependabot.yml)) checks **daily** and opens a PR
+1. **CLI bump.** `@rmartz/repo-hygiene` publishes a new version to npmjs.
+   Dependabot's npm ecosystem ([`dependabot.yml`](../../.github/dependabot.yml),
+   no registry auth needed) checks **daily** and opens a PR
    bumping the pinned dependency + lockfile, titled
    `fix(deps): bump @rmartz/repo-hygiene …`. The daily interval bounds how long a
    CLI release waits before it can become an Action release.

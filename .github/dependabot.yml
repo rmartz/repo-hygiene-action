@@ -1,15 +1,8 @@
 version: 2
 
-# @rmartz/repo-hygiene is an npm dependency published to GitHub Packages, so
-# Dependabot needs registry auth to see new CLI versions. Set a Dependabot secret
-# DEPENDABOT_PACKAGES_TOKEN (a classic PAT with `read:packages`) — ideally an
-# org-level Dependabot secret so every repo inherits it. Without it the npm job
-# 422s ("Secret Not Found") and silently stops opening ALL npm PRs.
-registries:
-  github-packages:
-    type: npm-registry
-    url: https://npm.pkg.github.com
-    token: ${{secrets.DEPENDABOT_PACKAGES_TOKEN}}
+# @rmartz/repo-hygiene is public on npmjs, so Dependabot needs no registry block
+# or DEPENDABOT_PACKAGES_TOKEN secret to see new CLI versions. Every npm
+# dependency here now comes from the one default registry.
 
 updates:
   - package-ecosystem: github-actions
@@ -30,8 +23,6 @@ updates:
 
   - package-ecosystem: npm
     directory: /
-    registries:
-      - github-packages
     schedule:
       # Daily, not weekly: a new @rmartz/repo-hygiene release is what cuts a new
       # Action release, so this interval bounds how long a CLI fix waits before it

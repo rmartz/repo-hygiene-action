@@ -15,8 +15,10 @@ picking it up.
 
 1. **CLI bump.** `@rmartz/repo-hygiene` publishes a new version to GitHub Packages.
    Dependabot's npm ecosystem (with the `github-packages` registry auth wired in
-   [`dependabot.yml`](../../.github/dependabot.yml)) opens a PR bumping the pinned
-   dependency + lockfile, titled `fix(deps): bump @rmartz/repo-hygiene …`.
+   [`dependabot.yml`](../../.github/dependabot.yml)) checks **daily** and opens a PR
+   bumping the pinned dependency + lockfile, titled
+   `fix(deps): bump @rmartz/repo-hygiene …`. The daily interval bounds how long a
+   CLI release waits before it can become an Action release.
 2. **Auto-merge.** The
    [`bot-automerge`](https://github.com/rmartz/bot-automerge) caller classifies it
    as a trusted Dependabot patch/minor bump and enables native auto-merge. It lands

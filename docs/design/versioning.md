@@ -98,8 +98,10 @@ consumer's CI goes from green to red with no change on their side. Examples:
   ignored (or vice versa), shifting what a consumer's run reports.
 - The CLI **changes the `.repo-hygiene.yml` schema**, so a consumer's existing
   config no longer parses or means something different.
-- The CLI **changes its exit-code semantics or the `ai-repo-hygiene` invocation the
-  wrapper must issue**, changing the effective run contract.
+- The CLI **changes its exit-code semantics or the library API the wrapper calls**
+  (`createRegistry` / `loadConfig` / `runHygiene`, or the `Finding` shape — see
+  [the integration contract](integration-contract.md)), changing the effective run
+  contract.
 
 When a CLI bump carries any such consumer-observable break, the Action release
 **must be a major**, so that a consumer pinning by major (the normal Dependabot

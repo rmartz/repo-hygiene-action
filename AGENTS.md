@@ -17,7 +17,7 @@ The `docs/` bundle is a first-class part of this repo, not an afterthought. On
   relevant [`docs/`](docs/index.md) page(s) and this file, so your change stays
   consistent with what is already documented.
 - **Extend, correct, and remove in the same PR.** If your change adds, alters, or
-  contradicts anything a doc says — an input, the CLI invocation, the release
+  contradicts anything a doc says — an input, the CLI/library contract, the release
   cadence, a consumer step — fix that doc in the same PR. If a doc describes
   something that no longer exists, delete it. An outdated doc is worse than none.
 - **Close gaps you find.** If you notice an undocumented behavior or a stale page

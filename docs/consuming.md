@@ -19,6 +19,7 @@ on: [pull_request, push]
 permissions:
   contents: read
   packages: read # read the public @rmartz/repo-hygiene package from GitHub Packages
+  statuses: write # post one commit status per check
 
 jobs:
   hygiene:
@@ -41,6 +42,11 @@ Why each piece is there:
 - **`packages: read`.** The install pulls the public `@rmartz/repo-hygiene`
   package from GitHub Packages using the built-in `GITHUB_TOKEN`; the read scope is
   all it needs — no per-repo PAT.
+- **`statuses: write`.** The action posts one commit status per check —
+  `repo-hygiene / okf`, `repo-hygiene / docs-links`, … — so a contributor sees
+  which check failed straight from the PR's status list. Without the scope the
+  action logs one warning and carries on; the job's own pass/fail still reports
+  the overall result. Set `statuses: false` to opt out.
 - **`checks` is the exact run list.** Omit it to run the default-on set; name
   checks to opt in (include the defaults you still want).
 - **`config`** points at the repo's `.repo-hygiene.yml`, resolved relative to
@@ -64,6 +70,23 @@ updates:
 Dependabot opens a PR bumping the SHA + comment to each new release. A newly-added
 default-on check ships inside that release and starts running with no edit to your
 caller — see [the distribution pipeline](design/distribution-pipeline.md).
+
+## Per-check statuses
+
+Each selected check gets a status named `<status-context> / <check>`
+(`status-context` defaults to `repo-hygiene`; give each invocation its own value
+if a workflow runs the action more than once). A check fails its status only on an
+`error` finding; a `warn`-only check passes with the warning count in its
+description. The status links to the workflow run, where the annotations are.
+
+- **They can be required checks.** Any of them can be marked required in branch
+  protection, alongside or instead of the job itself. Only require checks that run
+  on every commit: a check disabled in `.repo-hygiene.yml` (`enabled: false`) or
+  dropped from `checks` posts no status, and a required status that never arrives
+  blocks the PR.
+- **Fork pull requests get none.** A fork PR's `GITHUB_TOKEN` is read-only, so the
+  action skips posting there (with a notice) and only the job result shows. Don't
+  make per-check statuses required if you accept fork PRs.
 
 ## Path-filtering caveat
 

@@ -53,12 +53,16 @@ async function postStatuses(checks, findings) {
   const repo = env.GITHUB_REPOSITORY;
   const sha = env.INPUT_SHA;
   if (!repo || !sha || !env.INPUT_TOKEN) {
-    console.log('::notice title=repo-hygiene::Not posting per-check statuses: no repository, SHA, or token.');
+    console.log(
+      '::notice title=repo-hygiene::Not posting per-check statuses: no repository, SHA, or token.',
+    );
     return;
   }
   // A fork PR's GITHUB_TOKEN is read-only, so posting would 403 on every run.
   if (isForkPullRequest(repo)) {
-    console.log('::notice title=repo-hygiene::Not posting per-check statuses on a fork pull request (read-only token).');
+    console.log(
+      '::notice title=repo-hygiene::Not posting per-check statuses on a fork pull request (read-only token).',
+    );
     return;
   }
 
@@ -72,20 +76,23 @@ async function postStatuses(checks, findings) {
     const warnings = own.length - errors;
     let failure;
     try {
-      const response = await fetch(`${env.GITHUB_API_URL ?? 'https://api.github.com'}/repos/${repo}/statuses/${sha}`, {
-        method: 'POST',
-        headers: {
-          Accept: 'application/vnd.github+json',
-          Authorization: `Bearer ${env.INPUT_TOKEN}`,
-          'X-GitHub-Api-Version': '2022-11-28',
+      const response = await fetch(
+        `${env.GITHUB_API_URL ?? 'https://api.github.com'}/repos/${repo}/statuses/${sha}`,
+        {
+          method: 'POST',
+          headers: {
+            Accept: 'application/vnd.github+json',
+            Authorization: `Bearer ${env.INPUT_TOKEN}`,
+            'X-GitHub-Api-Version': '2022-11-28',
+          },
+          body: JSON.stringify({
+            state: errors > 0 ? 'failure' : 'success',
+            context: `${prefix} / ${check}`,
+            description: describe(errors, warnings),
+            target_url: targetUrl,
+          }),
         },
-        body: JSON.stringify({
-          state: errors > 0 ? 'failure' : 'success',
-          context: `${prefix} / ${check}`,
-          description: describe(errors, warnings),
-          target_url: targetUrl,
-        }),
-      });
+      );
       if (!response.ok) failure = `HTTP ${response.status}`;
     } catch (err) {
       failure = err instanceof Error ? err.message : String(err);

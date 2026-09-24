@@ -27,7 +27,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@rmartz/repo-hygiene": "5.0.0"
+    "@rmartz/repo-hygiene": "7.0.1"
   },
   "devDependencies": {
     "@semantic-release/commit-analyzer": "^13.0.1",

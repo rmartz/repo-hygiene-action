@@ -40,11 +40,26 @@ inputs:
     default: '.'
   token:
     description: >-
-      Token used to install @rmartz/repo-hygiene from GitHub Packages. Defaults
-      to the workflow GITHUB_TOKEN, which reads the public package when the
-      calling job grants `packages: read`.
+      Token used to install @rmartz/repo-hygiene from GitHub Packages and to post
+      per-check commit statuses. Defaults to the workflow GITHUB_TOKEN, which
+      reads the public package when the calling job grants `packages: read` and
+      posts statuses when it grants `statuses: write`.
     required: false
     default: ${{ github.token }}
+  statuses:
+    description: >-
+      Post one commit status per check (e.g. "repo-hygiene / okf") so the status
+      list shows which check failed. Needs `statuses: write` on the calling job;
+      without it the action warns and still reports the overall result. Set to
+      "false" to turn it off.
+    required: false
+    default: 'true'
+  status-context:
+    description: >-
+      Prefix for the per-check status names ("<prefix> / <check>"). Set a
+      distinct value when a workflow runs this action more than once.
+    required: false
+    default: 'repo-hygiene'
 
 runs:
   using: composite
@@ -62,12 +77,21 @@ runs:
       env:
         NODE_AUTH_TOKEN: ${{ inputs.token }}
       run: npm ci
-    # Run the checks against the consumer workspace (working-directory), invoking
-    # the CLI by absolute path from where it was just installed.
+    # Run the checks against the consumer workspace (working-directory). The
+    # runner script lives in this action's directory, so its import of
+    # @rmartz/repo-hygiene resolves to the copy just installed there. It prints
+    # the same annotations and exit code as the CLI, and also posts one commit
+    # status per check.
     - name: Run repo-hygiene checks
       shell: bash
       working-directory: ${{ inputs.working-directory }}
-      run: >-
-        "${GITHUB_ACTION_PATH}/node_modules/.bin/ai-repo-hygiene"
-        ${{ inputs.checks }} --check
-        ${{ inputs.config && format('--config {0}', inputs.config) || '' }}
+      env:
+        INPUT_CHECKS: ${{ inputs.checks }}
+        INPUT_CONFIG: ${{ inputs.config }}
+        INPUT_TOKEN: ${{ inputs.token }}
+        INPUT_STATUSES: ${{ inputs.statuses }}
+        INPUT_STATUS_CONTEXT: ${{ inputs.status-context }}
+        # A pull_request run's github.sha is the synthetic merge commit; statuses
+        # must land on the PR head to show in its status list.
+        INPUT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+      run: node "${GITHUB_ACTION_PATH}/scripts/run-checks.mjs"

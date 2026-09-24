@@ -49,7 +49,7 @@ off-limits because bootstrap once seeded it.
 ## Common commands
 
 ```bash
-npm ci                 # install deps (needs GitHub Packages auth for @rmartz/*)
+npm ci                 # install deps (all from npmjs, no auth needed)
 npm run format:check   # prettier --check .
 npm run format         # prettier --write .
 ```

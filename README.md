@@ -27,7 +27,6 @@ on: [pull_request, push]
 
 permissions:
   contents: read
-  packages: read
 
 jobs:
   hygiene:
@@ -41,22 +40,22 @@ jobs:
           config: .repo-hygiene.yml
 ```
 
-Check out your repository first (the Action scans the calling workspace), grant
-`packages: read` (the public `@rmartz/repo-hygiene` package installs with the
-built-in `GITHUB_TOKEN` — no PAT), and add a Dependabot `github-actions` entry so
-the pin stays current. See the
+Check out your repository first (the Action scans the calling workspace) and add a
+Dependabot `github-actions` entry so the pin stays current. No token or
+`packages: read` permission is needed: the Action installs the public
+`@rmartz/repo-hygiene` package from npmjs. See the
 [consumer setup guide](docs/consuming.md) for the full walkthrough and the
 path-filtering caveat.
 
 ### Inputs
 
-| Input               | Default               | Meaning                                                       |
-| ------------------- | --------------------- | ------------------------------------------------------------- |
-| `checks`            | `''`                  | Space-separated check names. Empty runs the default-on set.   |
-| `config`            | `''`                  | Path to `.repo-hygiene.yml`, relative to `working-directory`. |
-| `node-version`      | `'22'`                | Node.js version the checks run under.                         |
-| `working-directory` | `'.'`                 | Directory to scan (the repo root by default).                 |
-| `token`             | `${{ github.token }}` | Token used to read the package from GitHub Packages.          |
+| Input               | Default | Meaning                                                       |
+| ------------------- | ------- | ------------------------------------------------------------- |
+| `checks`            | `''`    | Space-separated check names. Empty runs the default-on set.   |
+| `config`            | `''`    | Path to `.repo-hygiene.yml`, relative to `working-directory`. |
+| `node-version`      | `'22'`  | Node.js version the checks run under.                         |
+| `working-directory` | `'.'`   | Directory to scan (the repo root by default).                 |
+| `token`             | `''`    | Deprecated and ignored; removed in the next major version.    |
 
 Omit `checks` to run the default-on set (`conflict-markers`, `action-pins`); name
 checks to opt into more (this becomes the exact run list). There is no `version`

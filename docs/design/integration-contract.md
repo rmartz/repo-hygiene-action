@@ -2,7 +2,7 @@
 type: Design
 title: The integration contract
 description: How repo-hygiene-action consumes @rmartz/repo-hygiene — the pinned npm dependency, the library API it calls, and the action-path vs workspace split.
-tags: [design, integration, cli]
+tags: [design, integration]
 ---
 
 # The integration contract
@@ -26,9 +26,10 @@ narrow so each side can evolve independently.
   in one pass over one resolved file set. The CLI has no machine-readable output
   to recover that grouping from.
 - **What this relies on.** The exported `Registry` (`get`, `defaultNames`),
-  `loadConfig`, `runHygiene`, and the `Finding` shape (`check`, `severity`). A
-  CLI major that changes any of these breaks the runner, and the dogfood job
-  catches it on the Dependabot bump PR.
+  `loadConfig`, `runHygiene`, `formatFindings`, `formatFindingsGithub`,
+  `resolveFormat`, and the `Finding` shape (`check`, `severity`). A package
+  change to any of these — rename, removal, or signature change — breaks the
+  runner, and the dogfood job catches it on the Dependabot bump PR.
 
 ## Version consumption — a pinned dependency, not an install string
 

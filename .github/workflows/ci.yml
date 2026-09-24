@@ -39,6 +39,7 @@ jobs:
     permissions:
       contents: read
       packages: read
+      statuses: write # the action posts one commit status per check
     steps:
       # Dogfood: run this repo's own composite action against its own tree, the
       # exact shape every consumer uses. This validates the action wrapper AND the

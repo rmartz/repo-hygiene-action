@@ -40,11 +40,15 @@ inputs:
     default: '.'
   token:
     description: >-
-      Token used to install @rmartz/repo-hygiene from GitHub Packages. Defaults
-      to the workflow GITHUB_TOKEN, which reads the public package when the
-      calling job grants `packages: read`.
+      Deprecated and ignored. @rmartz/repo-hygiene now installs from npmjs with
+      no auth, so no token (and no `packages: read` permission) is needed. Kept
+      so existing callers that pass it keep working; it will be removed in the
+      next major version.
     required: false
-    default: ${{ github.token }}
+    default: ''
+    deprecationMessage: >-
+      The `token` input is ignored: @rmartz/repo-hygiene installs from npmjs with
+      no auth. Remove it (and `packages: read`, if only granted for this action).
 
 runs:
   using: composite
@@ -52,15 +56,13 @@ runs:
     - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
       with:
         node-version: ${{ inputs.node-version }}
-        registry-url: https://npm.pkg.github.com
-        scope: '@rmartz'
     # Install the pinned CLI into this action's own directory, not the consumer
-    # workspace — $GITHUB_ACTION_PATH holds this action's package.json + lockfile.
+    # workspace — $GITHUB_ACTION_PATH holds this action's package.json, lockfile,
+    # and .npmrc (which pins the @rmartz scope to npmjs). The package is public on
+    # npmjs, so the install needs no token.
     - name: Install pinned @rmartz/repo-hygiene
       shell: bash
       working-directory: ${{ github.action_path }}
-      env:
-        NODE_AUTH_TOKEN: ${{ inputs.token }}
       run: npm ci
     # Run the checks against the consumer workspace (working-directory), invoking
     # the CLI by absolute path from where it was just installed.

@@ -18,7 +18,6 @@ on: [pull_request, push]
 
 permissions:
   contents: read
-  packages: read # read the public @rmartz/repo-hygiene package from GitHub Packages
 
 jobs:
   hygiene:
@@ -38,9 +37,11 @@ Why each piece is there:
   `actions/checkout` before the `- uses:` step. The action does not check out
   anything itself. A plain checkout is enough — the checks are tree-based
   (`git ls-files` / file reads, no history), so **no `fetch-depth: 0`** is needed.
-- **`packages: read`.** The install pulls the public `@rmartz/repo-hygiene`
-  package from GitHub Packages using the built-in `GITHUB_TOKEN`; the read scope is
-  all it needs — no per-repo PAT.
+- **No token or `packages: read`.** The install pulls the public
+  `@rmartz/repo-hygiene` package from npmjs, which needs no auth. Action versions
+  before this change installed from GitHub Packages and needed `packages: read`;
+  once your pin is past that, you can drop the permission and any `token:` input
+  (the input is now deprecated and ignored).
 - **`checks` is the exact run list.** Omit it to run the default-on set; name
   checks to opt in (include the defaults you still want).
 - **`config`** points at the repo's `.repo-hygiene.yml`, resolved relative to

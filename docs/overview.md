@@ -24,9 +24,10 @@ only wraps its CLI in a step consumers can drop into their own job. See
 
 ## What it does at run time
 
-1. Sets up Node.js and points npm at GitHub Packages for the `@rmartz` scope.
+1. Sets up Node.js.
 2. Runs `npm ci` **in the action's own directory** to install the exact
-   `@rmartz/repo-hygiene` version pinned in this repo's `package-lock.json`.
+   `@rmartz/repo-hygiene` version pinned in this repo's `package-lock.json`, from
+   npmjs with no auth.
 3. Invokes `ai-repo-hygiene <checks> --check [--config <path>]` against the
    consumer's checked-out workspace, emitting `::error` / `::warning` annotations
    inline on the PR diff.
@@ -42,7 +43,7 @@ out anything itself.
 | `config`            | `''`                  | Path to `.repo-hygiene.yml`, relative to `working-directory`.          |
 | `node-version`      | `'22'`                | Node.js version the checks run under.                                  |
 | `working-directory` | `'.'`                 | Directory to scan (the repo root by default).                          |
-| `token`             | `${{ github.token }}` | Token used to read the public package from GitHub Packages.            |
+| `token`             | `''`                  | Deprecated and ignored; removed in the next major version.             |
 
 There is deliberately **no `version` input** (unlike the reusable workflow): the
 installed CLI version is the one pinned in this Action's lockfile, bumped by

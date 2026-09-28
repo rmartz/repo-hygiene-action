@@ -58,3 +58,12 @@ updates:
         update-types:
           - minor
           - patch
+    cooldown:
+      # Since 2026-07-14 Dependabot waits 3 days after a release before proposing
+      # it. @rmartz/repo-hygiene is first-party, published from rmartz/repo-hygiene,
+      # so the wait buys no supply-chain safety and just holds its fixes back —
+      # defeating the daily interval above. Exempting it lets a new CLI version
+      # arrive on the next daily run. Every other dependency keeps the default
+      # cooldown.
+      exclude:
+        - '@rmartz/repo-hygiene'

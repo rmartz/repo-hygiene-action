@@ -2,7 +2,7 @@
 type: Design
 title: The integration contract
 description: How repo-hygiene-action consumes @rmartz/repo-hygiene — the pinned npm dependency, the library API it calls, and the action-path vs workspace split.
-tags: [design, integration, cli]
+tags: [design, integration]
 ---
 
 # The integration contract
@@ -13,9 +13,10 @@ narrow so each side can evolve independently.
 
 ## The package and its API
 
-- **Package:** `@rmartz/repo-hygiene`, published to GitHub Packages
-  (`https://npm.pkg.github.com`, scope `@rmartz`, public). Readable with the
-  built-in `GITHUB_TOKEN` plus `packages: read` — no PAT.
+- **Package:** `@rmartz/repo-hygiene`, published publicly to npmjs
+  (`https://registry.npmjs.org/`, with provenance). Installs with no auth — no
+  token or `packages: read` required. Versions up to 7.0.1 were also published to
+  GitHub Packages, which older Action releases installed from.
 - **Library API, not the CLI.** The action's runner,
   [`scripts/run-checks.mjs`](../../scripts/run-checks.mjs), imports
   `createRegistry`, `loadConfig`, and `runHygiene` from the package and does what
@@ -26,9 +27,10 @@ narrow so each side can evolve independently.
   in one pass over one resolved file set. The CLI has no machine-readable output
   to recover that grouping from.
 - **What this relies on.** The exported `Registry` (`get`, `defaultNames`),
-  `loadConfig`, `runHygiene`, and the `Finding` shape (`check`, `severity`). A
-  CLI major that changes any of these breaks the runner, and the dogfood job
-  catches it on the Dependabot bump PR.
+  `loadConfig`, `runHygiene`, `formatFindings`, `formatFindingsGithub`,
+  `resolveFormat`, and the `Finding` shape (`check`, `severity`). A package
+  change to any of these — rename, removal, or signature change — breaks the
+  runner, and the dogfood job catches it on the Dependabot bump PR.
 
 ## Version consumption — a pinned dependency, not an install string
 
@@ -44,8 +46,9 @@ crux of the design:
 - The pinned version is therefore the single source of truth for "which checks this
   Action ref runs," which is why the Action has no `version` input.
 
-The `@rmartz` scope is routed to GitHub Packages by the repo's
-[`.npmrc`](../../.npmrc); every other (public, npmjs) dependency resolves normally.
+The repo's [`.npmrc`](../../.npmrc) pins the `@rmartz` scope to npmjs. That keeps
+a runner- or user-level `.npmrc` that maps `@rmartz` to GitHub Packages (other
+`@rmartz` packages still live there) from redirecting the install.
 
 ## The action-path vs workspace split
 

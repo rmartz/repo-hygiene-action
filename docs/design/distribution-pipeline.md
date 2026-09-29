@@ -13,12 +13,14 @@ picking it up.
 
 ## Producing a release (this repo)
 
-1. **CLI bump.** `@rmartz/repo-hygiene` publishes a new version to GitHub Packages.
-   Dependabot's npm ecosystem (with the `github-packages` registry auth wired in
-   [`dependabot.yml`](../../.github/dependabot.yml)) checks **daily** and opens a PR
+1. **CLI bump.** `@rmartz/repo-hygiene` publishes a new version to npmjs.
+   Dependabot's npm ecosystem ([`dependabot.yml`](../../.github/dependabot.yml),
+   no registry auth needed) checks **daily** and opens a PR
    bumping the pinned dependency + lockfile, titled
    `fix(deps): bump @rmartz/repo-hygiene …`. The daily interval bounds how long a
-   CLI release waits before it can become an Action release.
+   CLI release waits before it can become an Action release. The CLI is exempt
+   from Dependabot's default 3-day release cooldown, since it's first-party;
+   other dependencies keep that cooldown.
 2. **Auto-merge.** The
    [`bot-automerge`](https://github.com/rmartz/bot-automerge) caller classifies it
    as a trusted Dependabot patch/minor bump and enables native auto-merge. It lands
@@ -26,16 +28,21 @@ picking it up.
    [`merge-safety`](https://github.com/rmartz/merge-safety) verdict — so nothing
    merges ahead of green.
 3. **Release.** On merge to `main`, [`release.yml`](../../.github/workflows/release.yml)
-   runs semantic-release. [`.releaserc.json`](../../.releaserc.json) maps `fix:` →
+   runs semantic-release through the fleet's shared
+   [semantic-release-ci](https://github.com/rmartz/semantic-release-ci) workflow.
+   [`.releaserc.json`](../../.releaserc.json) maps `fix:` →
    **patch** (the stock Conventional-Commits default), so the CLI bump cuts a new
    tag + GitHub Release. The
    release publishes nothing to a registry and commits nothing back (no
    `@semantic-release/npm`, no `@semantic-release/git`), so the built-in
-   `GITHUB_TOKEN` suffices — no PAT. Because this step only runs post-merge, a
-   `Release dry-run` job in [`ci.yml`](../../.github/workflows/ci.yml) exercises
-   the semantic-release config (that the changelog toolchain renders) on every
-   PR, so a broken release setup fails the PR instead of the post-merge run — the
-   pre-merge guard for the exact class of preset breakage seen in #1/#2.
+   `GITHUB_TOKEN` suffices — no PAT. Because this step only runs post-merge, the
+   required `release-check / release-check` check
+   ([`release-check.yml`](../../.github/workflows/release-check.yml)) renders the
+   release notes with the shared toolchain on every PR, so a broken release config
+   fails the PR instead of the post-merge run. It replaces a `Release dry-run` job
+   that exited on a PR before rendering anything, and so could not catch the class
+   of preset breakage seen in #1/#2; toolchain bumps are now tested once, in
+   semantic-release-ci, before they reach the pin here.
 
 The Action **mirrors the CLI's semver bump type** into its own release type: a CLI
 minor becomes a `feat(deps):` (Action minor) and a CLI major a `feat(deps)!:` +

@@ -27,7 +27,6 @@ on: [pull_request, push]
 
 permissions:
   contents: read
-  packages: read
   statuses: write # one commit status per check
 
 jobs:
@@ -42,11 +41,10 @@ jobs:
           config: .repo-hygiene.yml
 ```
 
-Check out your repository first (the Action scans the calling workspace), grant
-`packages: read` (the public `@rmartz/repo-hygiene` package installs with the
-built-in `GITHUB_TOKEN` — no PAT) and `statuses: write` (so each check shows up
-as its own `repo-hygiene / <check>` status on the commit), and add a Dependabot `github-actions` entry so
-the pin stays current. See the
+Check out your repository first (the Action scans the calling workspace). The
+package installs from npmjs — no `packages: read` or token needed. Grant
+`statuses: write` so each check shows up as its own `repo-hygiene / <check>` status
+on the commit. Add a Dependabot `github-actions` entry so the pin stays current. See the
 [consumer setup guide](docs/consuming.md) for the full walkthrough and the
 path-filtering caveat.
 
@@ -58,7 +56,7 @@ path-filtering caveat.
 | `config`            | `''`                  | Path to `.repo-hygiene.yml`, relative to `working-directory`. |
 | `node-version`      | `'22'`                | Node.js version the checks run under.                         |
 | `working-directory` | `'.'`                 | Directory to scan (the repo root by default).                 |
-| `token`             | `${{ github.token }}` | Token used to read the package and post per-check statuses.   |
+| `token`             | `${{ github.token }}` | Token to post per-check statuses (needs `statuses: write`).   |
 | `statuses`          | `'true'`              | Post one commit status per check. `'false'` turns it off.     |
 | `status-context`    | `'repo-hygiene'`      | Status name prefix: `<prefix> / <check>`.                     |
 

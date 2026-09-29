@@ -18,7 +18,9 @@ picking it up.
    no registry auth needed) checks **daily** and opens a PR
    bumping the pinned dependency + lockfile, titled
    `fix(deps): bump @rmartz/repo-hygiene …`. The daily interval bounds how long a
-   CLI release waits before it can become an Action release.
+   CLI release waits before it can become an Action release. The CLI is exempt
+   from Dependabot's default 3-day release cooldown, since it's first-party;
+   other dependencies keep that cooldown.
 2. **Auto-merge.** The
    [`bot-automerge`](https://github.com/rmartz/bot-automerge) caller classifies it
    as a trusted Dependabot patch/minor bump and enables native auto-merge. It lands

@@ -27,7 +27,7 @@
     "format:check": "prettier --check ."
   },
   "dependencies": {
-    "@rmartz/repo-hygiene": "7.0.1"
+    "@rmartz/repo-hygiene": "8.1.1"
   },
   "devDependencies": {
     "prettier": "^3.9.9"

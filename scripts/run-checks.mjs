@@ -3,7 +3,7 @@
 // shows exactly which check failed. The engine is called through the package's
 // library API rather than its CLI so every check runs in a single pass over one
 // resolved file set, and findings can be grouped by the check that produced
-// them. Exit code and annotations match `ai-repo-hygiene --check`.
+// them. Exit code and annotations match `repo-hygiene --check`.
 //
 // Inputs arrive as INPUT_* env vars set by action.yml. See
 // docs/design/integration-contract.md.

@@ -14,7 +14,10 @@ permissions.
 ```yaml
 # .github/workflows/repo-hygiene.yml
 name: Repo Hygiene
-on: [pull_request, push]
+on:
+  pull_request:
+  push:
+    branches: [main]
 
 permissions:
   contents: read
@@ -34,6 +37,9 @@ jobs:
 
 Why each piece is there:
 
+- **`push` is limited to `main`.** `pull_request` already covers PR branches; an
+  unfiltered `push` fires alongside it on every PR-branch push, running the job
+  twice and posting two identical `hygiene` checks on the same commit.
 - **Check out first.** The action scans the calling workspace, so the job must run
   `actions/checkout` before the `- uses:` step. The action does not check out
   anything itself. A plain checkout is enough — the checks are tree-based

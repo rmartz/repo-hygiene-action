@@ -23,7 +23,10 @@ consumer's CI runs itself.
 ```yaml
 # .github/workflows/repo-hygiene.yml
 name: Repo Hygiene
-on: [pull_request, push]
+on:
+  pull_request:
+  push:
+    branches: [main]
 
 permissions:
   contents: read

@@ -20,7 +20,7 @@ narrow so each side can evolve independently.
 - **Library API, not the CLI.** The action's runner,
   [`scripts/run-checks.mjs`](../../scripts/run-checks.mjs), imports
   `createRegistry`, `loadConfig`, and `runHygiene` from the package and does what
-  `ai-repo-hygiene <checks> --check [--config <path>]` does: an empty `checks`
+  `repo-hygiene <checks> --check [--config <path>]` does: an empty `checks`
   input resolves to the registry's default-on set, and the annotations and exit
   code are identical. It calls the library rather than the bin because it needs
   each finding's `check` to post one commit status per check. All checks still run

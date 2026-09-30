@@ -28,22 +28,26 @@ only wraps its CLI in a step consumers can drop into their own job. See
 2. Runs `npm ci` **in the action's own directory** to install the exact
    `@rmartz/repo-hygiene` version pinned in this repo's `package-lock.json`, from
    npmjs with no auth.
-3. Invokes `ai-repo-hygiene <checks> --check [--config <path>]` against the
-   consumer's checked-out workspace, emitting `::error` / `::warning` annotations
-   inline on the PR diff.
+3. Runs the selected checks against the consumer's checked-out workspace in
+   `--check` mode, emitting `::error` / `::warning` annotations inline on the PR
+   diff and failing the step if any check reports an error.
+4. Posts one commit status per check (`repo-hygiene / <check>`), so the PR's
+   status list shows which check failed without opening the log.
 
 The consumer checks out its own repository before the step; the action never checks
 out anything itself.
 
 ## Inputs
 
-| Input               | Default | Meaning                                                                |
-| ------------------- | ------- | ---------------------------------------------------------------------- |
-| `checks`            | `''`    | Space-separated check names. Empty runs the registry's default-on set. |
-| `config`            | `''`    | Path to `.repo-hygiene.yml`, relative to `working-directory`.          |
-| `node-version`      | `'22'`  | Node.js version the checks run under.                                  |
-| `working-directory` | `'.'`   | Directory to scan (the repo root by default).                          |
-| `token`             | `''`    | Deprecated and ignored; removed in the next major version.             |
+| Input               | Default               | Meaning                                                                |
+| ------------------- | --------------------- | ---------------------------------------------------------------------- |
+| `checks`            | `''`                  | Space-separated check names. Empty runs the registry's default-on set. |
+| `config`            | `''`                  | Path to `.repo-hygiene.yml`, relative to `working-directory`.          |
+| `node-version`      | `'22'`                | Node.js version the checks run under.                                  |
+| `working-directory` | `'.'`                 | Directory to scan (the repo root by default).                          |
+| `token`             | `${{ github.token }}` | Token used to post per-check commit statuses. Needs `statuses: write`. |
+| `statuses`          | `'true'`              | Post one commit status per check. `'false'` turns it off.              |
+| `status-context`    | `'repo-hygiene'`      | Status name prefix: `<prefix> / <check>`.                              |
 
 There is deliberately **no `version` input** (unlike the reusable workflow): the
 installed CLI version is the one pinned in this Action's lockfile, bumped by

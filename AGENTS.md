@@ -17,7 +17,7 @@ The `docs/` bundle is a first-class part of this repo, not an afterthought. On
   relevant [`docs/`](docs/index.md) page(s) and this file, so your change stays
   consistent with what is already documented.
 - **Extend, correct, and remove in the same PR.** If your change adds, alters, or
-  contradicts anything a doc says — an input, the CLI invocation, the release
+  contradicts anything a doc says — an input, the CLI/library contract, the release
   cadence, a consumer step — fix that doc in the same PR. If a doc describes
   something that no longer exists, delete it. An outdated doc is worse than none.
 - **Close gaps you find.** If you notice an undocumented behavior or a stale page
@@ -69,6 +69,16 @@ stock Conventional-Commits default), so a Dependabot `fix(deps)` bump of
 `@rmartz/repo-hygiene` ships a new Action version. PR titles
 are Conventional Commits and the repo squash-merges using the PR title, so a
 non-conventional title makes semantic-release skip the release.
+
+The release runs through the fleet's shared
+[semantic-release-ci](https://github.com/rmartz/semantic-release-ci) workflows:
+[`release.yml`](.github/workflows/release.yml) releases, and
+[`release-check.yml`](.github/workflows/release-check.yml) (required check
+`release-check / release-check`) proves `.releaserc.json` still works with the
+shared toolchain on every PR. The toolchain (`semantic-release`, its plugins, the
+changelog preset) is **not** in this repo's `package.json` — never add it back,
+and never reintroduce a `semantic-release --dry-run` job as a release guard: on a
+PR it exits before rendering notes, so it passes without testing anything.
 
 The Action versions **independently** of the wrapped CLI (its SemVer _number_
 describes the _wrapper's_ contract, not the CLI's number), but a CLI dependency bump

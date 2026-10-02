@@ -40,9 +40,10 @@ inputs:
     default: '.'
   token:
     description: >-
-      Token used to post per-check commit statuses. Defaults to the workflow
-      GITHUB_TOKEN, which posts statuses when the calling job grants
-      `statuses: write`. @rmartz/repo-hygiene installs from npmjs with no auth,
+      Token used to post per-check commit statuses and, on an inconclusive run,
+      to cancel the workflow run. Defaults to the workflow GITHUB_TOKEN, which
+      can do so when the calling job grants `statuses: write` and
+      `actions: write`. @rmartz/repo-hygiene installs from npmjs with no auth,
       so no token or `packages: read` is needed for the install.
     required: false
     default: ${{ github.token }}
@@ -60,6 +61,16 @@ inputs:
       distinct value when a workflow runs this action more than once.
     required: false
     default: 'repo-hygiene'
+  on-inconclusive:
+    description: >-
+      What to do when the run is inconclusive: an external transient error (rate
+      limit, timeout, network) kept a check from reaching a verdict, and no check
+      found an error. "cancel" (the default) cancels the whole workflow run, so it
+      reads as cancelled rather than failed; it needs `actions: write` and falls
+      back to "fail" without it. "fail" fails the step with an annotation saying
+      to re-run.
+    required: false
+    default: 'cancel'
 
 runs:
   using: composite
@@ -89,6 +100,7 @@ runs:
         INPUT_TOKEN: ${{ inputs.token }}
         INPUT_STATUSES: ${{ inputs.statuses }}
         INPUT_STATUS_CONTEXT: ${{ inputs.status-context }}
+        INPUT_ON_INCONCLUSIVE: ${{ inputs.on-inconclusive }}
         # A pull_request run's github.sha is the synthetic merge commit; statuses
         # must land on the PR head to show in its status list.
         INPUT_SHA: ${{ github.event.pull_request.head.sha || github.sha }}

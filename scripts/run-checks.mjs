@@ -5,6 +5,11 @@
 // resolved file set, and findings can be grouped by the check that produced
 // them. Exit code and annotations match `repo-hygiene --check`.
 //
+// An inconclusive run (CLI exit 3: an external transient error such as a rate
+// limit or timeout, with no error finding) is not a failure, since there is
+// nothing to fix in the change. By default the runner cancels its own workflow
+// run so the conclusion reads `cancelled`, not `failure`; see cancelRun below.
+//
 // Inputs arrive as INPUT_* env vars set by action.yml. See
 // docs/design/integration-contract.md.
 
@@ -19,6 +24,12 @@ import {
 } from '@rmartz/repo-hygiene';
 
 const env = process.env;
+
+// The CLI's exit-code contract (src/outcome.ts in @rmartz/repo-hygiene).
+const EXIT_INCONCLUSIVE = 3;
+// How long to wait for a requested cancellation to stop this step before
+// falling back to a non-zero exit.
+const CANCEL_WAIT_MS = 120_000;
 
 const registry = createRegistry();
 const requested = (env.INPUT_CHECKS ?? '').split(/\s+/).filter(Boolean);
@@ -47,7 +58,61 @@ if (env.INPUT_STATUSES === 'true') {
   await postStatuses(enabled, result.findings);
 }
 
+if (result.exitCode === EXIT_INCONCLUSIVE) await handleInconclusive();
+
 process.exit(result.exitCode);
+
+// Report an inconclusive run as cancelled rather than failed: request
+// cancellation of this workflow run and wait for it to stop the step. If the
+// cancel is disabled or refused (no `actions: write`), fall through to the
+// non-zero exit with an annotation that says to re-run, not to fix the change.
+async function handleInconclusive() {
+  const rerun =
+    'An external transient error (rate limit, timeout, or network) kept a check from ' +
+    'reaching a verdict. Nothing in the change needs fixing; re-run the job.';
+  if (env.INPUT_ON_INCONCLUSIVE !== 'cancel') {
+    console.log(`::error title=repo-hygiene (inconclusive)::${rerun}`);
+    return;
+  }
+  const refused = await cancelRun();
+  if (refused) {
+    console.log(
+      `::error title=repo-hygiene (inconclusive)::${rerun} Could not cancel the run instead ` +
+        `(${refused}); grant the job \`actions: write\` to report this as cancelled.`,
+    );
+    return;
+  }
+  console.log(`::warning title=repo-hygiene (inconclusive)::${rerun} Cancelling this run.`);
+  await new Promise((resolve) => setTimeout(resolve, CANCEL_WAIT_MS));
+  console.log(
+    `::error title=repo-hygiene (inconclusive)::${rerun} The run was not cancelled within ` +
+      `${CANCEL_WAIT_MS / 1000}s.`,
+  );
+}
+
+/** Request cancellation of this workflow run; returns why it failed, or undefined. */
+async function cancelRun() {
+  const repo = env.GITHUB_REPOSITORY;
+  const runId = env.GITHUB_RUN_ID;
+  if (!repo || !runId || !env.INPUT_TOKEN) return 'no repository, run id, or token';
+  try {
+    const response = await fetch(
+      `${env.GITHUB_API_URL ?? 'https://api.github.com'}/repos/${repo}/actions/runs/${runId}/cancel`,
+      { method: 'POST', headers: apiHeaders() },
+    );
+    return response.ok ? undefined : `HTTP ${response.status}`;
+  } catch (err) {
+    return err instanceof Error ? err.message : String(err);
+  }
+}
+
+function apiHeaders() {
+  return {
+    Accept: 'application/vnd.github+json',
+    Authorization: `Bearer ${env.INPUT_TOKEN}`,
+    'X-GitHub-Api-Version': '2022-11-28',
+  };
+}
 
 async function postStatuses(checks, findings) {
   const repo = env.GITHUB_REPOSITORY;
@@ -72,23 +137,23 @@ async function postStatuses(checks, findings) {
 
   for (const check of checks) {
     const own = findings.filter((f) => f.check === check);
-    const errors = own.filter((f) => f.severity === 'error').length;
-    const warnings = own.length - errors;
+    const count = (severity) => own.filter((f) => f.severity === severity).length;
+    const counts = {
+      errors: count('error'),
+      inconclusive: count('inconclusive'),
+      warnings: count('warn'),
+    };
     let failure;
     try {
       const response = await fetch(
         `${env.GITHUB_API_URL ?? 'https://api.github.com'}/repos/${repo}/statuses/${sha}`,
         {
           method: 'POST',
-          headers: {
-            Accept: 'application/vnd.github+json',
-            Authorization: `Bearer ${env.INPUT_TOKEN}`,
-            'X-GitHub-Api-Version': '2022-11-28',
-          },
+          headers: apiHeaders(),
           body: JSON.stringify({
-            state: errors > 0 ? 'failure' : 'success',
+            state: stateOf(counts),
             context: `${prefix} / ${check}`,
-            description: describe(errors, warnings),
+            description: describe(counts),
             target_url: targetUrl,
           }),
         },
@@ -109,12 +174,21 @@ async function postStatuses(checks, findings) {
   }
 }
 
-function describe(errors, warnings) {
-  if (errors === 0 && warnings === 0) return 'Passed';
+// A detected issue is `failure`. A check that couldn't reach a verdict is
+// `error`, GitHub's "couldn't evaluate" state, not a judgement of the change.
+function stateOf({ errors, inconclusive }) {
+  if (errors > 0) return 'failure';
+  if (inconclusive > 0) return 'error';
+  return 'success';
+}
+
+function describe({ errors, inconclusive, warnings }) {
+  const plural = (n, word) => `${n} ${word}${n === 1 ? '' : 's'}`;
   const parts = [];
-  if (errors > 0) parts.push(`${errors} error${errors === 1 ? '' : 's'}`);
-  if (warnings > 0) parts.push(`${warnings} warning${warnings === 1 ? '' : 's'}`);
-  return parts.join(', ');
+  if (errors > 0) parts.push(plural(errors, 'error'));
+  if (warnings > 0) parts.push(plural(warnings, 'warning'));
+  if (errors === 0 && inconclusive > 0) parts.unshift('Inconclusive — re-run');
+  return parts.length > 0 ? parts.join(', ') : 'Passed';
 }
 
 function isForkPullRequest(repo) {

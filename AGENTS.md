@@ -43,6 +43,9 @@ off-limits because bootstrap once seeded it.
   callers and (once consumers migrate) this Action's own pin are bumped by
   Dependabot; CI (incl. PR-title lint + the `commit-convention` tripwire), labels,
   the hardened `dependabot.yml`, and the squash-merge setting are owned here.
+- **PR policy:** [pr-policy.yml](.github/workflows/pr-policy.yml) runs the shared
+  `rmartz/pr-policy-action` (pinned, bumped by Dependabot) on this repo's PRs. It
+  passes `skip-uat: true`: the repo has nothing to user-test.
 - `ai-ensure-labels` / `ai-verify-squash-setting` are useful one-shot helpers, but
   this repo owns its `.github/` config going forward.
 

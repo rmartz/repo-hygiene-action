@@ -22,6 +22,7 @@ on:
 permissions:
   contents: read
   statuses: write # post one commit status per check
+  actions: write # report an inconclusive run as cancelled, not failed
 
 jobs:
   hygiene:
@@ -49,6 +50,12 @@ Why each piece is there:
   which check failed straight from the PR's status list. Without the scope the
   action logs one warning and carries on; the job's own pass/fail still reports
   the overall result. Set `statuses: false` to opt out.
+- **`actions: write`, in a workflow of its own.** When the run is
+  [inconclusive](#inconclusive-runs), the action cancels its own workflow run.
+  Without the scope it fails the step instead, with an annotation saying to
+  re-run. Cancelling stops every job in the run, which is why the action gets a
+  dedicated workflow; if you embed it in a shared one, set
+  `on-inconclusive: fail`.
 - **No `packages: read` needed.** The install pulls `@rmartz/repo-hygiene` from
   npmjs with no auth — no token or `packages: read` required.
 - **`checks` is the exact run list.** Omit it to run the default-on set; name
@@ -81,7 +88,10 @@ Each selected check gets a status named `<status-context> / <check>`
 (`status-context` defaults to `repo-hygiene`; give each invocation its own value
 if a workflow runs the action more than once). A check fails its status only on an
 `error` finding; a `warn`-only check passes with the warning count in its
-description. The status links to the workflow run, where the annotations are.
+description. A check that couldn't reach a verdict (an inconclusive finding and
+no error) posts state `error`, GitHub's "couldn't evaluate" state, described as
+"Inconclusive — re-run". The status links to the workflow run, where the
+annotations are.
 
 - **They can be required checks.** Any of them can be marked required in branch
   protection, alongside or instead of the job itself. Only require checks that run
@@ -91,6 +101,25 @@ description. The status links to the workflow run, where the annotations are.
 - **Fork pull requests get none.** A fork PR's `GITHUB_TOKEN` is read-only, so the
   action skips posting there (with a notice) and only the job result shows. Don't
   make per-check statuses required if you accept fork PRs.
+
+## Inconclusive runs
+
+A failure means a check found an issue in the change that needs fixing. An
+external transient error (a rate limit, a timeout, an unreachable network)
+proves nothing about the change, so the CLI reports it as **inconclusive** and
+exits `3` when no check found an error. A detected issue outranks it: if one
+check errors while another is inconclusive, the run fails.
+
+On an inconclusive run the action, after posting statuses:
+
+| `on-inconclusive`  | `actions: write` | Result                                                             |
+| ------------------ | ---------------- | ------------------------------------------------------------------ |
+| `cancel` (default) | granted          | Cancels the workflow run; the conclusion is `cancelled`.           |
+| `cancel` (default) | missing          | Fails the step with an `inconclusive` annotation saying to re-run. |
+| `fail`             | either           | Fails the step with an `inconclusive` annotation saying to re-run. |
+
+A cancelled required check still blocks the PR until it's re-run, which is the
+intent: the verdict is missing, not negative.
 
 ## Path-filtering caveat
 

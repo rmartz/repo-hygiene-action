@@ -28,7 +28,9 @@ narrow so each side can evolve independently.
   to recover that grouping from.
 - **What this relies on.** The exported `Registry` (`get`, `defaultNames`),
   `loadConfig`, `runHygiene`, `formatFindings`, `formatFindingsGithub`,
-  `resolveFormat`, and the `Finding` shape (`check`, `severity`). A package
+  `resolveFormat`, the `Finding` shape (`check`, `severity`, including the
+  `inconclusive` severity), and the exit-code contract (`3` = inconclusive,
+  mirrored as `EXIT_INCONCLUSIVE` in the runner). A package
   change to any of these — rename, removal, or signature change — breaks the
   runner, and the dogfood job catches it on the Dependabot bump PR.
 

@@ -31,6 +31,7 @@ on:
 permissions:
   contents: read
   statuses: write # one commit status per check
+  actions: write # report an inconclusive run as cancelled, not failed
 
 jobs:
   hygiene:
@@ -47,25 +48,38 @@ jobs:
 Check out your repository first (the Action scans the calling workspace). The
 package installs from npmjs — no `packages: read` or token needed. Grant
 `statuses: write` so each check shows up as its own `repo-hygiene / <check>` status
-on the commit. Add a Dependabot `github-actions` entry so the pin stays current. See the
+on the commit, and `actions: write` so an inconclusive run (see below) shows as
+cancelled. Add a Dependabot `github-actions` entry so the pin stays current. See the
 [consumer setup guide](docs/consuming.md) for the full walkthrough and the
 path-filtering caveat.
 
 ### Inputs
 
-| Input               | Default               | Meaning                                                       |
-| ------------------- | --------------------- | ------------------------------------------------------------- |
-| `checks`            | `''`                  | Space-separated check names. Empty runs the default-on set.   |
-| `config`            | `''`                  | Path to `.repo-hygiene.yml`, relative to `working-directory`. |
-| `node-version`      | `'22'`                | Node.js version the checks run under.                         |
-| `working-directory` | `'.'`                 | Directory to scan (the repo root by default).                 |
-| `token`             | `${{ github.token }}` | Token to post per-check statuses (needs `statuses: write`).   |
-| `statuses`          | `'true'`              | Post one commit status per check. `'false'` turns it off.     |
-| `status-context`    | `'repo-hygiene'`      | Status name prefix: `<prefix> / <check>`.                     |
+| Input               | Default               | Meaning                                                                   |
+| ------------------- | --------------------- | ------------------------------------------------------------------------- |
+| `checks`            | `''`                  | Space-separated check names. Empty runs the default-on set.               |
+| `config`            | `''`                  | Path to `.repo-hygiene.yml`, relative to `working-directory`.             |
+| `node-version`      | `'22'`                | Node.js version the checks run under.                                     |
+| `working-directory` | `'.'`                 | Directory to scan (the repo root by default).                             |
+| `token`             | `${{ github.token }}` | Token for statuses (`statuses: write`) and cancelling (`actions: write`). |
+| `statuses`          | `'true'`              | Post one commit status per check. `'false'` turns it off.                 |
+| `status-context`    | `'repo-hygiene'`      | Status name prefix: `<prefix> / <check>`.                                 |
+| `on-inconclusive`   | `'cancel'`            | On an inconclusive run: `cancel` the workflow run, or `fail` the step.    |
 
-Omit `checks` to run the default-on set (`conflict-markers`, `action-pins`); name
-checks to opt into more (this becomes the exact run list). There is no `version`
-input — the CLI version is the one pinned in this Action's lockfile.
+Omit `checks` to run the CLI's default-on set; name checks to opt into more (this
+becomes the exact run list). There is no `version` input — the CLI version is the
+one pinned in this Action's lockfile.
+
+### Outcomes
+
+A run **fails** only when a check found an issue in the change that needs
+fixing. When an external transient error (a rate limit, a timeout, an
+unreachable network) keeps a check from reaching a verdict and nothing else
+failed, the run is **inconclusive** (CLI exit `3`). The Action then cancels its
+own workflow run, so it reads as cancelled rather than failed, and re-running it
+is the fix. Cancelling stops the **whole workflow run**, so run the Action in its
+own workflow (as above) or set `on-inconclusive: fail`. Without `actions: write`
+it falls back to failing the step with an annotation that says to re-run.
 
 ## How it relates to `@rmartz/repo-hygiene`
 

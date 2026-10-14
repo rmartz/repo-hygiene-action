@@ -30,6 +30,6 @@
     "@rmartz/repo-hygiene": "14.0.0"
   },
   "devDependencies": {
-    "prettier": "^3.9.9"
+    "prettier": "^3.9.10"
   }
 }

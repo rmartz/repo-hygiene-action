@@ -48,6 +48,11 @@ off-limits because bootstrap once seeded it.
   passes `skip-uat: true`: the repo has nothing to user-test. Its `title` check
   validates PR titles (Conventional Commits, breaking-marker and type rules), so
   the repo has no separate PR-title-lint workflow.
+- **PR lifecycle labels:** [pr-lifecycle.yml](.github/workflows/pr-lifecycle.yml)
+  runs `rmartz/pr-lifecycle-action` labels-only (no arming, no real-actor token)
+  with `uat: 'off'`, matching `skip-uat`: it keeps each PR's lifecycle labels
+  current and marks every PR `no UAT needed`. `bot-automerge.yml` still does the
+  merging.
 - `ai-ensure-labels` / `ai-verify-squash-setting` are useful one-shot helpers, but
   this repo owns its `.github/` config going forward.
 

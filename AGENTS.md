@@ -45,8 +45,9 @@ off-limits because bootstrap once seeded it.
   the hardened `dependabot.yml`, and the squash-merge setting are owned here.
 - **PR policy:** [pr-policy.yml](.github/workflows/pr-policy.yml) runs the shared
   `rmartz/pr-policy-action` (pinned, bumped by Dependabot) on this repo's PRs. It
-  passes `skip-uat: true`: the repo has nothing to user-test. Its `title` check
-  validates PR titles (Conventional Commits, breaking-marker and type rules), so
+  passes `skip-uat: true`: the repo skips UAT by choice (the Action it ships is
+  user-facing, so this is a decision, not a claim there's nothing to test). Its
+  `title` check validates PR titles (Conventional Commits, breaking-marker and type rules), so
   the repo has no separate PR-title-lint workflow.
 - **PR lifecycle labels:** [pr-lifecycle.yml](.github/workflows/pr-lifecycle.yml)
   runs `rmartz/pr-lifecycle-action` without arming, with `uat: 'off'` matching `skip-uat`: it keeps each PR's lifecycle labels current, marks every PR `no UAT needed`, and posts the `pr-lifecycle/sign-off` status (as the `rmartz-pr-lifecycle` App, which the `pr-policy` caller trusts). `bot-automerge.yml` still does the

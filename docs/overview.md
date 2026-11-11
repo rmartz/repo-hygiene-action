@@ -43,7 +43,7 @@ out anything itself.
 | ------------------- | --------------------- | ---------------------------------------------------------------------- |
 | `checks`            | `''`                  | Space-separated check names. Empty runs the registry's default-on set. |
 | `config`            | `''`                  | Path to `.repo-hygiene.yml`, relative to `working-directory`.          |
-| `node-version`      | `'22'`                | Node.js version the checks run under.                                  |
+| `node-version`      | `'26'`                | Node.js version the checks run under (current LTS; older accepted).    |
 | `working-directory` | `'.'`                 | Directory to scan (the repo root by default).                          |
 | `token`             | `${{ github.token }}` | Token used to post per-check commit statuses. Needs `statuses: write`. |
 | `statuses`          | `'true'`              | Post one commit status per check. `'false'` turns it off.              |
